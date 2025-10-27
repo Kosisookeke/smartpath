@@ -1,0 +1,139 @@
+.quiz-result {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, #C19A6B 0%, #8B4513 100%);
+}
+
+.result-card {
+    background: white;
+    border-radius: 16px;
+    padding: 3rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+}
+
+.result-icon {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+}
+
+.result-icon.pass {
+    animation: bounce 0.5s ease-in-out;
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+.result-card h1 {
+    color: #333;
+    margin-bottom: 2rem;
+}
+
+.score-circle {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #C19A6B 0%, #8B4513 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 2rem;
+    box-shadow: 0 8px 20px rgba(139, 69, 19, 0.3);
+}
+
+.score-value {
+    font-size: 3.5rem;
+    font-weight: bold;
+    color: white;
+}
+
+.score-label {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+}
+
+.result-details {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    font-size: 1.1rem;
+}
+
+.detail-label {
+    color: #666;
+}
+
+.detail-value {
+    font-weight: 600;
+    color: #333;
+}
+
+.pass-text {
+    color: #28a745;
+}
+
+.fail-text {
+    color: #dc3545;
+}
+
+.result-message {
+    margin-bottom: 2rem;
+}
+
+.result-message p {
+    color: #666;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.result-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .result-card {
+        padding: 2rem;
+    }
+
+    .score-circle {
+        width: 160px;
+        height: 160px;
+    }
+
+    .score-value {
+        font-size: 2.5rem;
+    }
+
+    .result-actions {
+        flex-direction: column;
+    }
+
+    .result-actions .btn {
+        width: 100%;
+    }
+}
