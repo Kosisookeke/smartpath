@@ -227,6 +227,8 @@ cd backend
 pytest tests/ -v
 pytest tests/test_auth.py -v  # Test specific module
 pytest --cov=app tests/       # With coverage report
+# Linting
+flake8 app/ tests/
 ```
 
 ### Frontend Testing
@@ -234,7 +236,27 @@ pytest --cov=app tests/       # With coverage report
 cd frontend
 npm test                      # Run all tests
 npm test -- --coverage       # With coverage report
+# Linting
+npm run lint
 ```
+
+
+## 🔄 CI/CD Pipeline
+
+This project uses GitHub Actions for continuous integration and deployment.
+
+### Pipeline Features
+- ✅ Automated linting (flake8 for Python, ESLint for JavaScript)
+- ✅ Automated testing (pytest and Jest)
+- ✅ Docker image building and validation
+- ✅ Branch protection on `main`
+- ✅ Required status checks before merging
+
+### Workflow Triggers
+- Pushes to any branch except `main`
+- Pull requests targeting `main`
+
+For detailed CI/CD setup instructions, see [CI_SETUP.md](CI_SETUP.md)
 
 ## 🎨 Default User Accounts
 
