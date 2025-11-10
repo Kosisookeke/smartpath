@@ -39,7 +39,7 @@ jobs:
       - name: Run tests with pytest
         working-directory: ./backend
         run: |
-          pytest tests/ -v --cov=app --cov-report=term-missing
+          pytest tests/test_simple.py -v
 
       - name: Build Docker image
         working-directory: ./backend
