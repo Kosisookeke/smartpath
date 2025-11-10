@@ -76,6 +76,8 @@ jobs:
 
       - name: Build application
         working-directory: ./frontend
+        env:
+          CI: false
         run: npm run build
 
       - name: Build Docker image
