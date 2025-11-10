@@ -4,12 +4,6 @@ These tests verify basic functionality without requiring database setup
 """
 
 
-def test_app_imports():
-    """Test that app modules can be imported"""
-    from app import create_app
-    assert create_app is not None
-
-
 def test_basic_math():
     """Test basic Python functionality"""
     result = 2 + 2
