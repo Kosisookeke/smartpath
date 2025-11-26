@@ -1,0 +1,43 @@
+# Example Terraform variables file
+# Copy this file to terraform.tfvars and update with your values
+# terraform.tfvars is git-ignored and should not be committed
+
+project_name        = "smartpath"
+location            = "centralindia"
+resource_group_name = "smartpath-rg"
+
+# Azure Subscription (optional - uses default from az login if not provided)
+# subscription_id = "d24f2d4a-386f-4a19-a76d-083018f8e1f9"
+
+# Network configuration
+vnet_address_space  = "10.0.0.0/16"
+public_subnet_cidr  = "10.0.1.0/24"
+private_subnet_cidr = "10.0.2.0/24"
+
+# VM configuration
+vm_size      = "Standard_B1s"
+admin_username = "azureuser"
+
+# Security: Your IP address for SSH access to Bastion Host
+# Format: "YOUR_IP/32" (e.g., "102.22.184.140/32")
+# Use "0.0.0.0/0" only for testing (allows SSH from anywhere - NOT recommended)
+my_ip = "102.22.184.140/32"
+
+# Database configuration
+db_version    = "14"
+db_sku_name   = "B_Standard_B1ms"
+db_storage_mb = 32768
+
+# Database credentials (OPTIONAL - defaults are provided, but change for production!)
+# db_admin_username = "dbadmin"  # Default: "dbadmin"
+# db_admin_password = "YourSecurePassword123!"  # Default: "TempPassword123!"
+
+# Container Registry
+acr_sku = "Basic"
+
+# Tags
+tags = {
+  Environment = "dev"
+  Project     = "SmartPath"
+  ManagedBy   = "Terraform"
+}
