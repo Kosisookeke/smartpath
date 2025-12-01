@@ -54,6 +54,7 @@ jobs:
           login-server: ${{ secrets.ACR_LOGIN_SERVER }}
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
+        continue-on-error: false
 
       # Push Backend image to ACR
       - name: Push Backend image to ACR

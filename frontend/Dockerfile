@@ -16,8 +16,11 @@ COPY . .
 # Build the React app
 RUN npm run build
 
-# Production stage
+# Production stage - use latest nginx:alpine for security updates
 FROM nginx:alpine
+
+# Update system packages for security
+RUN apk update && apk upgrade && rm -rf /var/cache/apk/*
 
 # Copy built files to nginx
 COPY --from=builder /app/build /usr/share/nginx/html
