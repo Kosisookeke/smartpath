@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  backend:
+    image: {{ backend_image }}
+    container_name: smartpath-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      - FLASK_APP=app.py
+      - PYTHONUNBUFFERED=1
+    networks:
+      - smartpath-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    image: {{ frontend_image }}
+    container_name: smartpath-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000
+    depends_on:
+      - backend
+    networks:
+      - smartpath-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  smartpath-network:
+    driver: bridge
+
