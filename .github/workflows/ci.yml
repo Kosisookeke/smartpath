@@ -105,4 +105,3 @@ jobs:
           docker push ${ACR_SERVER}/smartpath-frontend:latest
           
           echo "✅ Frontend image pushed to ${ACR_SERVER}/smartpath-frontend:${IMAGE_TAG}"
-
