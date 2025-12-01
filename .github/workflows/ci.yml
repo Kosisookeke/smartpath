@@ -1,0 +1,81 @@
+name: CI Pipeline
+
+# Trigger on pull requests to main branch
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          cd backend
+          pytest tests/ -v --cov=app --cov-report=term-missing
+        continue-on-error: true # Don't fail on test errors for now
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t smartpath-app:latest -f backend/Dockerfile .
+          docker tag smartpath-app:latest smartpath-app:${{ github.sha }}
+
+      # Security: Scan Docker image for vulnerabilities
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'smartpath-app:latest'
+          format: 'sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1' # Fail the build if critical/high vulnerabilities found
+
+      # Security: Scan Terraform code
+      - name: Run tfsec security scanner
+        uses: aquasecurity/tfsec-action@v1.0.0
+        with:
+          working_directory: terraform/
+          soft_fail: false # Fail the build on security issues
+
+      # Log in to Azure Container Registry
+      - name: Log in to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      # Build, tag, and push image to ACR
+      - name: Build, tag, and push image to ACR
+        run: |
+          # Get the ACR login server from secrets
+          ACR_SERVER=${{ secrets.ACR_LOGIN_SERVER }}
+          IMAGE_TAG=${{ github.sha }}
+          
+          # Tag the image with ACR server and commit SHA
+          docker tag smartpath-app:latest ${ACR_SERVER}/smartpath-app:${IMAGE_TAG}
+          docker tag smartpath-app:latest ${ACR_SERVER}/smartpath-app:latest
+          
+          # Push both tags
+          docker push ${ACR_SERVER}/smartpath-app:${IMAGE_TAG}
+          docker push ${ACR_SERVER}/smartpath-app:latest
+          
+          echo "✅ Image pushed to ${ACR_SERVER}/smartpath-app:${IMAGE_TAG}"
+

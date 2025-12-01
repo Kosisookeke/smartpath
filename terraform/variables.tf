@@ -9,7 +9,7 @@ variable "project_name" {
 variable "location" {
   description = "Azure region where resources will be created (must be allowed by subscription policy)"
   type        = string
-  default     = "centralindia"
+  default     = "uaenorth"  # Testing uaenorth for VM capacity
 }
 
 variable "subscription_id" {
@@ -52,7 +52,7 @@ variable "database_subnet_cidr" {
 variable "vm_size" {
   description = "Size of the virtual machines (Bastion and Application VM)"
   type        = string
-  default     = "Standard_B1s"  # Standard B1s - trying for capacity availability
+  default     = "Standard_D2s_v3"  # D-series Gen2 compatible, typically available on student subscriptions
 }
 
 variable "admin_username" {
@@ -64,7 +64,7 @@ variable "admin_username" {
 variable "my_ip" {
   description = "Your IP address for SSH access to Bastion Host (use 0.0.0.0/0 for anywhere, not recommended for production)"
   type        = string
-  default     = "0.0.0.0/0"
+  default     = "102.22.184.140/32"
 }
 
 variable "db_version" {
