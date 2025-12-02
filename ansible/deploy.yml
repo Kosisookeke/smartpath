@@ -1,0 +1,233 @@
+---
+# Ansible Playbook: Deploy SmartPath Application
+# This playbook deploys the SmartPath application using Docker Compose
+# It pulls images from Azure Container Registry and manages the application lifecycle
+
+- name: Deploy SmartPath Application
+  hosts: app_server
+  become: yes
+  vars:
+    app_directory: "/opt/smartpath"
+    docker_compose_file: "docker-compose.prod.yml"
+
+  tasks:
+    - name: Ensure application directory exists
+      file:
+        path: "{{ app_directory }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+      tags: [deploy, setup]
+
+    # Log in to Azure Container Registry
+    - name: Log in to Azure Container Registry
+      docker_login:
+        registry: "{{ acr_login_server }}"
+        username: "{{ acr_username }}"
+        password: "{{ acr_password }}"
+        reauthorize: yes
+      tags: [deploy, acr]
+
+    # Create docker-compose production file
+    - name: Create docker-compose.prod.yml
+      copy:
+        dest: "{{ app_directory }}/{{ docker_compose_file }}"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0644'
+        content: |
+          version: '3.8'
+
+          services:
+            backend:
+              image: {{ acr_login_server }}/smartpath-backend:latest
+              container_name: smartpath-backend
+              ports:
+                - "5000:5000"
+              environment:
+                - FLASK_APP=app.py
+                - FLASK_ENV=production
+                - SECRET_KEY=${SECRET_KEY}
+                - DATABASE_URL=postgresql://{{ db_user }}:{{ db_password }}@{{ db_host }}/{{ db_name }}
+              networks:
+                - smartpath-network
+              restart: unless-stopped
+              healthcheck:
+                test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/health')"]
+                interval: 30s
+                timeout: 10s
+                retries: 3
+                start_period: 40s
+              logging:
+                driver: "json-file"
+                options:
+                  max-size: "10m"
+                  max-file: "3"
+
+            frontend:
+              image: {{ acr_login_server }}/smartpath-frontend:latest
+              container_name: smartpath-frontend
+              ports:
+                - "80:80"
+                - "443:443"
+              environment:
+                - REACT_APP_API_URL=http://{{ ansible_host }}:5000
+              depends_on:
+                backend:
+                  condition: service_healthy
+              networks:
+                - smartpath-network
+              restart: unless-stopped
+              healthcheck:
+                test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+                interval: 30s
+                timeout: 10s
+                retries: 3
+                start_period: 40s
+              logging:
+                driver: "json-file"
+                options:
+                  max-size: "10m"
+                  max-file: "3"
+
+          networks:
+            smartpath-network:
+              driver: bridge
+      tags: [deploy, config]
+
+    # Create .env file with sensitive information
+    - name: Create .env file with environment variables
+      copy:
+        dest: "{{ app_directory }}/.env"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0600'
+        content: |
+          # Database Configuration
+          DB_HOST={{ db_host }}
+          DB_NAME={{ db_name }}
+          DB_USER={{ db_user }}
+          DB_PASSWORD={{ db_password }}
+
+          # Application Configuration
+          SECRET_KEY={{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}
+          FLASK_ENV=production
+
+          # Azure Container Registry
+          ACR_LOGIN_SERVER={{ acr_login_server }}
+      tags: [deploy, config]
+
+    # Stop existing containers
+    - name: Stop existing containers
+      docker_compose:
+        project_src: "{{ app_directory }}"
+        files:
+          - "{{ docker_compose_file }}"
+        state: absent
+      ignore_errors: yes
+      tags: [deploy, stop]
+
+    # Pull latest images from ACR
+    - name: Pull latest images from Azure Container Registry
+      docker_compose:
+        project_src: "{{ app_directory }}"
+        files:
+          - "{{ docker_compose_file }}"
+        pull: yes
+      tags: [deploy, pull]
+
+    # Start application containers
+    - name: Start application containers
+      docker_compose:
+        project_src: "{{ app_directory }}"
+        files:
+          - "{{ docker_compose_file }}"
+        state: present
+        restarted: yes
+      tags: [deploy, start]
+
+    # Wait for services to be healthy
+    - name: Wait for backend to be healthy
+      uri:
+        url: "http://localhost:5000/api/health"
+        status_code: 200
+      register: result
+      until: result.status == 200
+      retries: 30
+      delay: 10
+      tags: [deploy, verify]
+
+    - name: Wait for frontend to be healthy
+      uri:
+        url: "http://localhost/"
+        status_code: 200
+      register: result
+      until: result.status == 200
+      retries: 30
+      delay: 10
+      tags: [deploy, verify]
+
+    # Clean up old Docker images
+    - name: Clean up old Docker images
+      docker_prune:
+        images: yes
+        images_filters:
+          dangling: false
+      tags: [deploy, cleanup]
+
+    # Verify deployment
+    - name: Get running containers
+      command: docker compose -f {{ docker_compose_file }} ps
+      args:
+        chdir: "{{ app_directory }}"
+      register: docker_ps
+      changed_when: false
+      tags: [deploy, verify]
+
+    - name: Display running containers
+      debug:
+        msg: "{{ docker_ps.stdout_lines }}"
+      tags: [deploy, verify]
+
+    # Check container logs for errors
+    - name: Check backend logs for errors
+      shell: docker logs smartpath-backend --tail 50 2>&1 | grep -i "error" || echo "No errors found"
+      register: backend_logs
+      changed_when: false
+      tags: [deploy, verify]
+
+    - name: Check frontend logs for errors
+      shell: docker logs smartpath-frontend --tail 50 2>&1 | grep -i "error" || echo "No errors found"
+      register: frontend_logs
+      changed_when: false
+      tags: [deploy, verify]
+
+    - name: Display backend log check results
+      debug:
+        msg: "{{ backend_logs.stdout }}"
+      tags: [deploy, verify]
+
+    - name: Display frontend log check results
+      debug:
+        msg: "{{ frontend_logs.stdout }}"
+      tags: [deploy, verify]
+
+    # Final deployment status
+    - name: Deployment completion message
+      debug:
+        msg: |
+          ============================================
+          Deployment Completed Successfully!
+          ============================================
+          Application Directory: {{ app_directory }}
+          Backend URL: http://{{ ansible_host }}:5000
+          Frontend URL: http://{{ ansible_host }}
+
+          Images deployed:
+          - {{ acr_login_server }}/smartpath-backend:latest
+          - {{ acr_login_server }}/smartpath-frontend:latest
+
+          Use 'docker compose -f {{ docker_compose_file }} logs -f' to view logs
+          ============================================
+      tags: [deploy, verify]

@@ -51,25 +51,83 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'smartpath-backend:latest'
-          format: 'sarif'
+          format: 'table'
           severity: 'CRITICAL,HIGH'
-          exit-code: '0' # Warn but don't fail on vulnerabilities
+          exit-code: '1' # Fail build on critical/high vulnerabilities
+          vuln-type: 'os,library'
+          ignore-unfixed: true
+
+      - name: Run Trivy vulnerability scanner on Backend (SARIF)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'smartpath-backend:latest'
+          format: 'sarif'
+          output: 'trivy-backend-results.sarif'
+          severity: 'CRITICAL,HIGH'
+        continue-on-error: true
+
+      - name: Upload Trivy Backend scan results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-backend-results.sarif'
+          category: 'trivy-backend'
+        continue-on-error: true
 
       # Security: Scan Frontend Docker image for vulnerabilities
       - name: Run Trivy vulnerability scanner on Frontend
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'smartpath-frontend:latest'
-          format: 'sarif'
+          format: 'table'
           severity: 'CRITICAL,HIGH'
-          exit-code: '0' # Warn but don't fail on vulnerabilities
+          exit-code: '1' # Fail build on critical/high vulnerabilities
+          vuln-type: 'os,library'
+          ignore-unfixed: true
 
-      # Security: Scan Terraform code
+      - name: Run Trivy vulnerability scanner on Frontend (SARIF)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'smartpath-frontend:latest'
+          format: 'sarif'
+          output: 'trivy-frontend-results.sarif'
+          severity: 'CRITICAL,HIGH'
+        continue-on-error: true
+
+      - name: Upload Trivy Frontend scan results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-frontend-results.sarif'
+          category: 'trivy-frontend'
+        continue-on-error: true
+
+      # Security: Scan Docker Compose file
+      - name: Run Trivy vulnerability scanner on Docker Compose
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          scan-ref: './docker-compose.yml'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0' # Warn only for Docker Compose issues
+
+      # Security: Scan Terraform code with tfsec
       - name: Run tfsec security scanner
         uses: aquasecurity/tfsec-action@v1.0.0
         with:
           working_directory: terraform/
           soft_fail: false # Fail the build on security issues
+
+      # Security: Scan Infrastructure as Code with Checkov
+      - name: Run Checkov IaC scanner
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: terraform/
+          framework: terraform
+          output_format: cli
+          soft_fail: false # Fail the build on critical issues
+          skip_check: CKV_AZURE_1,CKV_AZURE_2 # Skip specific checks if needed
 
       # Log in to Azure Container Registry
       - name: Log in to Azure Container Registry

@@ -1,0 +1,25 @@
+# Ansible Inventory Template for SmartPath Application
+# Copy this file to inventory.ini and update with your actual values
+
+[app_server]
+app-vm ansible_host=<APP_VM_PRIVATE_IP>
+
+[app_server:vars]
+ansible_user=azureuser
+ansible_ssh_private_key_file=~/.ssh/id_rsa
+# For bastion/jump host access:
+ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q -i ~/.ssh/id_rsa azureuser@<BASTION_PUBLIC_IP>"'
+ansible_python_interpreter=/usr/bin/python3
+
+[all:vars]
+# Application variables
+app_directory=/opt/smartpath
+acr_login_server=<ACR_LOGIN_SERVER>
+acr_username=<ACR_USERNAME>
+acr_password=<ACR_PASSWORD>
+
+# Database configuration
+db_host=<DB_HOST>
+db_name=<DB_NAME>
+db_user=<DB_USER>
+db_password=<DB_PASSWORD>
