@@ -216,23 +216,11 @@ jobs:
       - name: Test Bastion Connectivity
         run: |
           echo "Testing bastion host connectivity..."
-          if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i ~/.ssh/id_rsa azureuser@${{ secrets.BASTION_PUBLIC_IP }} "echo 'Bastion connection successful'"; then
-            echo "✓ Can connect to bastion host"
-          else
-            echo "❌ Cannot connect to bastion host"
-            echo "Check that BASTION_PUBLIC_IP is correct and accessible"
-            exit 1
-          fi
-
-      - name: Test Bastion to App VM Connectivity
-        run: |
-          echo "Testing connectivity from bastion to app VM..."
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa azureuser@${{ secrets.BASTION_PUBLIC_IP }} \
-            "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 azureuser@${{ secrets.APP_VM_PRIVATE_IP }} 'echo Connection successful' || echo 'Cannot reach app VM from bastion'"
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i ~/.ssh/id_rsa azureuser@${{ secrets.BASTION_PUBLIC_IP }} "echo 'Bastion connection successful'"
+          echo "✓ Bastion reachable"
 
       - name: Update Ansible inventory with secrets
         run: |
-          echo "Generating Ansible inventory..."
           cat > ansible/inventory.ini << EOF
           [app_server]
           app-vm ansible_host=${{ secrets.APP_VM_PRIVATE_IP }}
@@ -244,13 +232,9 @@ jobs:
           ansible_python_interpreter=/usr/bin/python3
           EOF
 
-          echo "✓ Ansible inventory generated"
-
       - name: Test Ansible connection
         run: |
-          echo "Testing Ansible connection..."
-          ansible app_server -i ansible/inventory.ini -m ping -vvv || exit 1
-          echo "✓ Ansible connection successful"
+          ansible app_server -i ansible/inventory.ini -m ping
 
       - name: Deploy application with Ansible
         run: |
