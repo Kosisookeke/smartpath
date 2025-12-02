@@ -1,0 +1,21 @@
+# Ansible sensitive files
+inventory.ini
+.env
+
+# Ansible runtime files
+*.retry
+.ansible/
+/tmp/
+ansible_facts/
+
+# SSH keys
+*.pem
+*.key
+id_rsa*
+
+# Logs
+*.log
+
+# Backup files
+*.bak
+*~

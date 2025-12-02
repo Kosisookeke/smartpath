@@ -26,13 +26,34 @@ jobs:
           docker build -t smartpath-backend:latest -f backend/Dockerfile ./backend
           docker tag smartpath-backend:latest smartpath-backend:${{ github.sha }}
 
+      # Security: Scan Backend Docker image for vulnerabilities
       - name: Run Trivy vulnerability scanner on Backend
+        uses: aquasecurity/trivy-action@master
+        continue-on-error: true
+        with:
+          image-ref: 'smartpath-backend:latest'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0' # Don't fail build (informational only)
+          vuln-type: 'os,library'
+          ignore-unfixed: true
+
+      - name: Run Trivy vulnerability scanner on Backend (SARIF)
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'smartpath-backend:latest'
           format: 'sarif'
+          output: 'trivy-backend-results.sarif'
           severity: 'CRITICAL,HIGH'
-          exit-code: '0' # Warn but don't fail on vulnerabilities
+        continue-on-error: true
+
+      - name: Upload Trivy Backend scan results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-backend-results.sarif'
+          category: 'trivy-backend-cd'
+        continue-on-error: true
 
       # Build and push Frontend image
       - name: Build Frontend Docker image
@@ -40,13 +61,44 @@ jobs:
           docker build -t smartpath-frontend:latest -f frontend/Dockerfile ./frontend
           docker tag smartpath-frontend:latest smartpath-frontend:${{ github.sha }}
 
+      # Security: Scan Frontend Docker image for vulnerabilities
       - name: Run Trivy vulnerability scanner on Frontend
+        uses: aquasecurity/trivy-action@master
+        continue-on-error: true
+        with:
+          image-ref: 'smartpath-frontend:latest'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0' # Don't fail build (informational only)
+          vuln-type: 'os,library'
+          ignore-unfixed: true
+
+      - name: Run Trivy vulnerability scanner on Frontend (SARIF)
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'smartpath-frontend:latest'
           format: 'sarif'
+          output: 'trivy-frontend-results.sarif'
           severity: 'CRITICAL,HIGH'
-          exit-code: '0' # Warn but don't fail on vulnerabilities
+        continue-on-error: true
+
+      - name: Upload Trivy Frontend scan results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-frontend-results.sarif'
+          category: 'trivy-frontend-cd'
+        continue-on-error: true
+
+      # Security: Scan Docker Compose file
+      - name: Run Trivy vulnerability scanner on Docker Compose
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          scan-ref: './docker-compose.yml'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0' # Warn only for Docker Compose issues
 
       # Log in to Azure Container Registry
       - name: Log in to Azure Container Registry
@@ -106,14 +158,64 @@ jobs:
 
       - name: Setup SSH
         run: |
+          set -e
+          echo "Setting up SSH configuration..."
+
+          # Validate required secrets are set
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "❌ ERROR: SSH_PRIVATE_KEY secret is not set"
+            exit 1
+          fi
+
+          if [ -z "${{ secrets.BASTION_PUBLIC_IP }}" ]; then
+            echo "❌ ERROR: BASTION_PUBLIC_IP secret is not set"
+            exit 1
+          fi
+
+          if [ -z "${{ secrets.APP_VM_PRIVATE_IP }}" ]; then
+            echo "❌ ERROR: APP_VM_PRIVATE_IP secret is not set"
+            exit 1
+          fi
+
+          # Create SSH directory
           mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          # Write SSH private key
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.BASTION_PUBLIC_IP }} >> ~/.ssh/known_hosts
-          ssh-keyscan -H ${{ secrets.APP_VM_PRIVATE_IP }} >> ~/.ssh/known_hosts
+
+          # Validate SSH key format
+          if ! ssh-keygen -l -f ~/.ssh/id_rsa > /dev/null 2>&1; then
+            echo "❌ ERROR: SSH_PRIVATE_KEY is not a valid SSH private key"
+            echo "Please check that the secret contains a valid RSA/ED25519 private key"
+            exit 1
+          fi
+
+          echo "✓ SSH private key configured"
+
+          # Scan bastion host key
+          echo "Scanning bastion host: ${{ secrets.BASTION_PUBLIC_IP }}"
+          if ! ssh-keyscan -H -T 10 ${{ secrets.BASTION_PUBLIC_IP }} >> ~/.ssh/known_hosts 2>/dev/null; then
+            echo "⚠️  WARNING: Could not scan bastion host key"
+            echo "This might cause issues if strict host key checking is enabled"
+          else
+            echo "✓ Bastion host key added"
+          fi
+
+          # Scan app VM host key (might fail if behind bastion, that's OK)
+          echo "Scanning app VM host: ${{ secrets.APP_VM_PRIVATE_IP }}"
+          if ! ssh-keyscan -H -T 10 ${{ secrets.APP_VM_PRIVATE_IP }} >> ~/.ssh/known_hosts 2>/dev/null; then
+            echo "⚠️  WARNING: Could not scan app VM host key (expected if behind bastion)"
+          else
+            echo "✓ App VM host key added"
+          fi
+
+          echo "✓ SSH setup complete"
 
       - name: Update Ansible inventory with secrets
         run: |
+          echo "Generating Ansible inventory..."
           cat > ansible/inventory.ini << EOF
           [app_server]
           app-vm ansible_host=${{ secrets.APP_VM_PRIVATE_IP }}
@@ -121,13 +223,38 @@ jobs:
           [app_server:vars]
           ansible_user=azureuser
           ansible_ssh_private_key_file=~/.ssh/id_rsa
-          ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q -i ~/.ssh/id_rsa azureuser@${{ secrets.BASTION_PUBLIC_IP }}"'
+          ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q -i ~/.ssh/id_rsa azureuser@${{ secrets.BASTION_PUBLIC_IP }}" -o StrictHostKeyChecking=no'
           ansible_python_interpreter=/usr/bin/python3
           EOF
 
+          echo "✓ Ansible inventory generated"
+          echo ""
+          echo "Inventory configuration:"
+          echo "  VM IP: ${{ secrets.APP_VM_PRIVATE_IP }}"
+          echo "  Bastion IP: ${{ secrets.BASTION_PUBLIC_IP }}"
+          echo "  SSH User: azureuser"
+
       - name: Test Ansible connection
         run: |
-          ansible app_server -i ansible/inventory.ini -m ping
+          echo "Testing Ansible connection to app server..."
+          echo "This will connect through the bastion host"
+          echo ""
+
+          if ansible app_server -i ansible/inventory.ini -m ping -v; then
+            echo ""
+            echo "✓ Successfully connected to app server via Ansible"
+          else
+            echo ""
+            echo "❌ Failed to connect to app server"
+            echo ""
+            echo "Troubleshooting steps:"
+            echo "1. Verify SSH_PRIVATE_KEY secret contains the correct private key"
+            echo "2. Verify BASTION_PUBLIC_IP is correct and accessible"
+            echo "3. Verify APP_VM_PRIVATE_IP is correct"
+            echo "4. Ensure the SSH key has access to both bastion and app VM"
+            echo "5. Check bastion host allows SSH forwarding"
+            exit 1
+          fi
 
       - name: Deploy application with Ansible
         run: |

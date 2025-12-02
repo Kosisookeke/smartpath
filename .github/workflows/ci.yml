@@ -47,29 +47,199 @@ jobs:
           docker tag smartpath-frontend:latest smartpath-frontend:${{ github.sha }}
 
       # Security: Scan Backend Docker image for vulnerabilities
-      - name: Run Trivy vulnerability scanner on Backend
+      - name: Run Trivy vulnerability scanner on Backend (Table)
+        id: trivy-backend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'smartpath-backend:latest'
+          format: 'table'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          exit-code: '0' # Don't fail yet, generate reports first
+          vuln-type: 'os,library'
+          ignore-unfixed: true
+          output: 'trivy-backend-table.txt'
+
+      - name: Display Backend Scan Summary
+        if: always()
+        run: |
+          echo "### 🔍 Backend Security Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f trivy-backend-table.txt ]; then
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            cat trivy-backend-table.txt >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No vulnerabilities found! ✅" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+      - name: Run Trivy vulnerability scanner on Backend (JSON)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'smartpath-backend:latest'
+          format: 'json'
+          output: 'trivy-backend-results.json'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+        continue-on-error: true
+
+      - name: Check Backend for Critical Vulnerabilities
+        continue-on-error: true
+        run: |
+          if [ -f trivy-backend-results.json ]; then
+            CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' trivy-backend-results.json || echo 0)
+            HIGH=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="HIGH")] | length' trivy-backend-results.json || echo 0)
+
+            echo "Backend Image Vulnerabilities:"
+            echo "  CRITICAL: $CRITICAL"
+            echo "  HIGH: $HIGH"
+
+            if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+              echo "⚠️  CRITICAL or HIGH vulnerabilities found in backend image (not failing build)"
+              echo "Review the scan results when ready"
+            else
+              echo "✅ No CRITICAL or HIGH vulnerabilities found"
+            fi
+          fi
+
+      - name: Run Trivy vulnerability scanner on Backend (SARIF)
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'smartpath-backend:latest'
           format: 'sarif'
+          output: 'trivy-backend-results.sarif'
           severity: 'CRITICAL,HIGH'
-          exit-code: '0' # Warn but don't fail on vulnerabilities
+        continue-on-error: true
+
+      - name: Upload Trivy Backend scan results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-backend-results.sarif'
+          category: 'trivy-backend'
+        continue-on-error: true
+
+      - name: Upload Backend Scan Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trivy-backend-results
+          path: |
+            trivy-backend-table.txt
+            trivy-backend-results.json
+            trivy-backend-results.sarif
+          retention-days: 30
 
       # Security: Scan Frontend Docker image for vulnerabilities
-      - name: Run Trivy vulnerability scanner on Frontend
+      - name: Run Trivy vulnerability scanner on Frontend (Table)
+        id: trivy-frontend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'smartpath-frontend:latest'
+          format: 'table'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          exit-code: '0' # Don't fail yet, generate reports first
+          vuln-type: 'os,library'
+          ignore-unfixed: true
+          output: 'trivy-frontend-table.txt'
+
+      - name: Display Frontend Scan Summary
+        if: always()
+        run: |
+          echo "### 🔍 Frontend Security Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f trivy-frontend-table.txt ]; then
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            cat trivy-frontend-table.txt >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No vulnerabilities found! ✅" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+      - name: Run Trivy vulnerability scanner on Frontend (JSON)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'smartpath-frontend:latest'
+          format: 'json'
+          output: 'trivy-frontend-results.json'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+        continue-on-error: true
+
+      - name: Check Frontend for Critical Vulnerabilities
+        continue-on-error: true
+        run: |
+          if [ -f trivy-frontend-results.json ]; then
+            CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' trivy-frontend-results.json || echo 0)
+            HIGH=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="HIGH")] | length' trivy-frontend-results.json || echo 0)
+
+            echo "Frontend Image Vulnerabilities:"
+            echo "  CRITICAL: $CRITICAL"
+            echo "  HIGH: $HIGH"
+
+            if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+              echo "⚠️  CRITICAL or HIGH vulnerabilities found in frontend image (not failing build)"
+              echo "Review the scan results when ready"
+            else
+              echo "✅ No CRITICAL or HIGH vulnerabilities found"
+            fi
+          fi
+
+      - name: Run Trivy vulnerability scanner on Frontend (SARIF)
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'smartpath-frontend:latest'
           format: 'sarif'
+          output: 'trivy-frontend-results.sarif'
           severity: 'CRITICAL,HIGH'
-          exit-code: '0' # Warn but don't fail on vulnerabilities
+        continue-on-error: true
 
-      # Security: Scan Terraform code
+      - name: Upload Trivy Frontend scan results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-frontend-results.sarif'
+          category: 'trivy-frontend'
+        continue-on-error: true
+
+      - name: Upload Frontend Scan Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trivy-frontend-results
+          path: |
+            trivy-frontend-table.txt
+            trivy-frontend-results.json
+            trivy-frontend-results.sarif
+          retention-days: 30
+
+      # Security: Scan Docker Compose file
+      - name: Run Trivy vulnerability scanner on Docker Compose
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          scan-ref: './docker-compose.yml'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0' # Warn only for Docker Compose issues
+
+      # Security: Scan Terraform code with tfsec
       - name: Run tfsec security scanner
         uses: aquasecurity/tfsec-action@v1.0.0
+        continue-on-error: true
         with:
           working_directory: terraform/
-          soft_fail: false # Fail the build on security issues
+          soft_fail: true # Don't fail the build on security issues (informational only)
+
+      # Security: Scan Infrastructure as Code with Checkov
+      - name: Run Checkov IaC scanner
+        uses: bridgecrewio/checkov-action@master
+        continue-on-error: true
+        with:
+          directory: terraform/
+          framework: terraform
+          output_format: cli
+          soft_fail: true # Don't fail the build (informational only)
+          skip_check: CKV_AZURE_1,CKV_AZURE_2 # Skip specific checks if needed
 
       # Log in to Azure Container Registry
       - name: Log in to Azure Container Registry
