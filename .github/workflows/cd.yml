@@ -266,7 +266,7 @@ jobs:
 
       - name: Verify deployment
         run: |
-          ansible app_server -i ansible/inventory.ini -m shell -a "cd /opt/smartpath && docker compose ps"
+          ansible app_server -i ansible/inventory.ini -m shell -a "cd /opt/smartpath && docker compose -f docker-compose.prod.yml ps"
 
       - name: Cleanup SSH keys
         if: always()
