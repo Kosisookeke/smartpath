@@ -22,7 +22,7 @@
 
     # Log in to Azure Container Registry
     - name: Log in to Azure Container Registry
-      docker_login:
+      community.docker.docker_login:
         registry: "{{ acr_login_server }}"
         username: "{{ acr_username }}"
         password: "{{ acr_password }}"
@@ -120,7 +120,7 @@
 
     # Stop existing containers
     - name: Stop existing containers
-      docker_compose:
+      community.docker.docker_compose_v2:
         project_src: "{{ app_directory }}"
         files:
           - "{{ docker_compose_file }}"
@@ -130,21 +130,21 @@
 
     # Pull latest images from ACR
     - name: Pull latest images from Azure Container Registry
-      docker_compose:
+      community.docker.docker_compose_v2:
         project_src: "{{ app_directory }}"
         files:
           - "{{ docker_compose_file }}"
-        pull: yes
+        pull: always
       tags: [deploy, pull]
 
     # Start application containers
     - name: Start application containers
-      docker_compose:
+      community.docker.docker_compose_v2:
         project_src: "{{ app_directory }}"
         files:
           - "{{ docker_compose_file }}"
         state: present
-        restarted: yes
+        recreate: always
       tags: [deploy, start]
 
     # Wait for services to be healthy
@@ -170,7 +170,7 @@
 
     # Clean up old Docker images
     - name: Clean up old Docker images
-      docker_prune:
+      community.docker.docker_prune:
         images: yes
         images_filters:
           dangling: false
