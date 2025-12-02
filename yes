@@ -1,0 +1,14 @@
+* [33me40883fc[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mkosi-devops[m[33m, [m[1;31morigin/kosi-devops[m[33m)[m Add Ansible configuration management and CD pipeline
+* [33mfdf831f2[m Fix Terraform import errors and update VM size to Standard_D2s_v3 for student subscription compatibility
+[31m|[m *   [33mab0859f9[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge pull request #14 from Kosisookeke/kosi-devops
+[31m|[m [32m|[m[31m\[m  
+[31m|[m [32m|[m[31m/[m  
+[31m|[m[31m/[m[32m|[m   
+* [32m|[m [33me0cfdf98[m Security: Remove SSH key from repository and update .gitignore
+[33m|[m *   [33m2b2c0a79[m[33m ([m[1;32mmain[m[33m)[m Merge pull request #13 from Kosisookeke/ft-docker-configs
+[33m|[m [34m|[m[35m\[m  
+[33m|[m [34m|[m * [33m0b541fe6[m[33m ([m[1;31morigin/ft-docker-configs[m[33m)[m ch(documentation): add testing and CI documentatiojn
+[33m|[m [34m|[m * [33m19efff98[m bug(ci): fix docker commands
+[33m|[m [34m|[m * [33m564d8989[m ch(eslint): fix lint errors on frontend
+[33m|[m [34m|[m * [33m753d4b82[m ch(tests): add demo tests to verify funvvtionality
+[33m|[m [34m|[m * [33md2c43fab[m ch(tests): add demo tests to verify funvvtionality

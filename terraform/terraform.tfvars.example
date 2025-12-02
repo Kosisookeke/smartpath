@@ -3,7 +3,7 @@
 # terraform.tfvars is git-ignored and should not be committed
 
 project_name        = "smartpath"
-location            = "centralindia"
+location            = "uaenorth"
 resource_group_name = "smartpath-rg"
 
 # Azure Subscription (optional - uses default from az login if not provided)

@@ -211,6 +211,8 @@ terraform/.terraform/
 terraform/.terraform.lock.hcl
 terraform/terraform.tfstate
 terraform/terraform.tfstate.backup
+terraform/*.tfstate
+terraform/*.tfstate*
 terraform/*.tfvars
 terraform/*.tfvars.json
 terraform/.terraform.tfstate.lock.info
@@ -222,6 +224,8 @@ terraform/*_override.tf
 terraform/*_override.tf.json
 terraform/tfplan
 terraform/*.tfplan
+terraform/terraform-cloud-credentials.json
+terraform/CREDENTIALS.md
 
 # SSH Keys - NEVER commit these!
 *.pem

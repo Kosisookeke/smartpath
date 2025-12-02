@@ -21,6 +21,18 @@ output "container_registry_name" {
   value       = azurerm_container_registry.main.name
 }
 
+output "acr_username" {
+  description = "Username for Azure Container Registry (for GitHub Secrets)"
+  value       = azurerm_container_registry.main.admin_username
+  sensitive   = false
+}
+
+output "acr_password" {
+  description = "Password for Azure Container Registry (for GitHub Secrets)"
+  value       = azurerm_container_registry.main.admin_password
+  sensitive   = true
+}
+
 output "database_host" {
   description = "FQDN of the PostgreSQL database server"
   value       = azurerm_postgresql_flexible_server.main.fqdn

@@ -18,12 +18,20 @@ terraform {
       version = "~> 3.0"
     }
   }
+
+  # Terraform Cloud Backend Configuration
+  cloud {
+    organization = "smartpath-org"
+    workspaces {
+      name = "smart"
+    }
+  }
 }
 
 # Configure the Azure Provider
-# This will automatically use credentials from 'az login' (similar to AWS 'aws configure')
 # For local use: Run 'az login' before running terraform commands
 # For Terraform Cloud: Set ARM_* environment variables in workspace settings
+# The provider will automatically use ARM_* env vars if available, otherwise falls back to az CLI
 provider "azurerm" {
   features {
     resource_group {
@@ -32,8 +40,9 @@ provider "azurerm" {
       prevent_deletion_if_contains_resources = false
     }
   }
-  
-  # Optional: Specify subscription ID (uses default from az login if not provided)
+
+  # Optional: Specify subscription ID (uses default from az login or ARM_SUBSCRIPTION_ID env var if not provided)
+  # The azurerm provider automatically uses ARM_* environment variables when available
   subscription_id = var.subscription_id
 }
 
@@ -56,6 +65,11 @@ resource "azurerm_resource_group" "main" {
   location = var.location
 
   tags = var.tags
+
+  lifecycle {
+    prevent_destroy = false
+    ignore_changes  = [tags, location]
+  }
 }
 
 # Virtual Network
@@ -180,7 +194,7 @@ resource "azurerm_network_security_group" "private" {
     source_address_prefix      = var.private_subnet_cidr
     destination_address_prefix = "*"
   }
-  
+
   # Allow database connections from Database subnet (for PostgreSQL)
   security_rule {
     name                       = "AllowDatabaseFromDatabaseSubnet"
@@ -243,7 +257,7 @@ resource "azurerm_linux_virtual_machine" "bastion" {
   size                = var.vm_size
   # Removed zone specification - let Azure choose available zone
   # Removed Spot priority - trying regular VMs for capacity
-  admin_username      = var.admin_username
+  admin_username = var.admin_username
 
   network_interface_ids = [
     azurerm_network_interface.bastion.id,
@@ -262,7 +276,7 @@ resource "azurerm_linux_virtual_machine" "bastion" {
   source_image_reference {
     publisher = "Canonical"
     offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts-gen2"
+    sku       = "22_04-lts-gen2" # Gen2 image (for B-series VMs)
     version   = "latest"
   }
 
@@ -292,7 +306,7 @@ resource "azurerm_linux_virtual_machine" "app" {
   size                = var.vm_size
   # Removed zone specification - let Azure choose available zone
   # Removed Spot priority - trying regular VMs for capacity
-  admin_username      = var.admin_username
+  admin_username = var.admin_username
 
   network_interface_ids = [
     azurerm_network_interface.app.id,
@@ -311,7 +325,7 @@ resource "azurerm_linux_virtual_machine" "app" {
   source_image_reference {
     publisher = "Canonical"
     offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts-gen2"
+    sku       = "22_04-lts-gen2" # Gen2 image (for B-series VMs)
     version   = "latest"
   }
 
@@ -387,7 +401,7 @@ resource "azurerm_container_registry" "main" {
   # Network rules - only allow access from VNet
   # Note: network_rule_set requires Premium SKU. For Basic SKU, we'll use public access with IP restrictions
   network_rule_bypass_option = "AzureServices"
-  
+
   # For Basic SKU, we can't use network_rule_set. ACR will be accessible from VNet via public endpoint.
   # To restrict access, upgrade to Premium SKU or use firewall rules.
 
