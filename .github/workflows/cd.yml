@@ -236,6 +236,22 @@ jobs:
         run: |
           ansible app_server -i ansible/inventory.ini -m ping
 
+      - name: Check if Docker is installed
+        id: docker_check
+        run: |
+          if ansible app_server -i ansible/inventory.ini -m command -a "docker --version" 2>/dev/null; then
+            echo "docker_installed=true" >> $GITHUB_OUTPUT
+          else
+            echo "docker_installed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run setup playbook to install Docker
+        if: steps.docker_check.outputs.docker_installed != 'true'
+        run: |
+          echo "Docker not found, running setup playbook..."
+          cd ansible
+          ansible-playbook -i inventory.ini setup.yml
+
       - name: Deploy application with Ansible
         run: |
           cd ansible
