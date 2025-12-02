@@ -9,6 +9,7 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    environment: ACR_LOGIN_SERVER
     
     steps:
       - name: Checkout code
