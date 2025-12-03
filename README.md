@@ -9,31 +9,31 @@ SmartPath Context
 In many African learning environments, students struggle to access organized and affordable online educational resources. **SmartPath** bridges this gap by providing a simple, accessible, and interactive learning platform that supports students in exploring lessons, taking quizzes, and tracking progress.
 
 Target Users
-- 🎓 High school and university students
-- 👨‍🏫 Educators creating digital learning materials
-- 📚 Independent learners seeking accessible study resources
-- 🌍 Students in areas with limited access to quality education
+-  High school and university students
+-  Educators creating digital learning materials
+-  Independent learners seeking accessible study resources
+-  Students in areas with limited access to quality education
 
 Core Features (Implemented)
 
-### ✅ Phase 1 - MVP (Current Release)
-- ✅ **User Registration & Login:** Secure authentication system with password hashing
-- ✅ **Landing Page:** Modern, responsive home page with platform overview
-- ✅ **Learning Modules:** Browse categorized study topics and lessons
-- ✅ **Interactive Quizzes:** Multiple-choice quizzes with instant feedback and scoring
-- ✅ **User Dashboard:** Personalized view of courses and progress
-- ✅ **Admin Panel:** Content management for courses and quizzes
-- ✅ **Profile Management:** Users can update their information
-- ✅ **RESTful API:** Complete backend API with proper error handling
+###  Phase 1 - MVP (Current Release)
+-  **User Registration & Login:** Secure authentication system with password hashing
+-  **Landing Page:** Modern, responsive home page with platform overview
+-  **Learning Modules:** Browse categorized study topics and lessons
+-  **Interactive Quizzes:** Multiple-choice quizzes with instant feedback and scoring
+-  **User Dashboard:** Personalized view of courses and progress
+-  **Admin Panel:** Content management for courses and quizzes
+-  **Profile Management:** Users can update their information
+-  **RESTful API:** Complete backend API with proper error handling
 
-### 🔄 Phase 2 - Enhancements (Upcoming)
-- 📊 **Progress Tracking:** Visual analytics of learning journey
-- 🏆 **Achievements & Badges:** Gamification elements
-- 💬 **Discussion Forums:** Community learning features
-- 📱 **Mobile Optimization:** Progressive Web App (PWA)
-- 🔔 **Notifications:** Learning reminders and updates
+### Phase 2 - Enhancements (Upcoming)
+-  **Progress Tracking:** Visual analytics of learning journey
+-  **Achievements & Badges:** Gamification elements
+-  **Discussion Forums:** Community learning features
+-  **Mobile Optimization:** Progressive Web App (PWA)
+-  **Notifications:** Learning reminders and updates
 
-## 🧰 Technology Stack
+##  Technology Stack
 
 | Layer | Technology | Version | Purpose |
 |-------|------------|---------|---------|
@@ -50,7 +50,7 @@ Core Features (Implemented)
 | **DevOps** | Git | - | Version control |
 | | GitHub Actions | - | CI/CD (future) |
 
-## 📋 Prerequisites
+##  Prerequisites
 
 Before you begin, ensure you have the following installed:
 - **Node.js** (v16.0.0 or higher) - [Download here](https://nodejs.org/)
@@ -59,7 +59,7 @@ Before you begin, ensure you have the following installed:
 - **npm** (comes with Node.js)
 - **pip** (comes with Python)
 
-## 🚀 Installation and Setup
+##  Installation and Setup
 
 ### Step 1: Clone the Repository
 ```bash
@@ -131,7 +131,7 @@ The app will open automatically at `http://localhost:3000`
 npm test
 ```
 
-## 🌐 Project Structure
+##  Project Structure
 
 ```
 smartpath/
@@ -192,7 +192,7 @@ smartpath/
 └── README.md               # This file
 ```
 
-## 🔌 API Endpoints
+##  API Endpoints
 
 ### Authentication
 - `POST /api/auth/register` - Register new user
@@ -241,16 +241,16 @@ npm run lint
 ```
 
 
-## 🔄 CI/CD Pipeline
+##  CI/CD Pipeline
 
 This project uses GitHub Actions for continuous integration and deployment.
 
 ### Pipeline Features
-- ✅ Automated linting (flake8 for Python, ESLint for JavaScript)
-- ✅ Automated testing (pytest and Jest)
-- ✅ Docker image building and validation
-- ✅ Branch protection on `main`
-- ✅ Required status checks before merging
+-  Automated linting (flake8 for Python, ESLint for JavaScript)
+-  Automated testing (pytest and Jest)
+-  Docker image building and validation
+-  Branch protection on `main`
+-  Required status checks before merging
 
 ### Workflow Triggers
 - Pushes to any branch except `main`
@@ -258,7 +258,7 @@ This project uses GitHub Actions for continuous integration and deployment.
 
 For detailed CI/CD setup instructions, see [CI_SETUP.md](CI_SETUP.md)
 
-## 🎨 Default User Accounts
+##  Default User Accounts
 
 For testing purposes, the following accounts are created:
 
@@ -270,17 +270,17 @@ For testing purposes, the following accounts are created:
 - Email: `student@smartpath.com`
 - Password: `student123`
 
-## 🔒 Security Features
+##  Security Features
 
-- ✅ Password hashing using Werkzeug security
-- ✅ CORS protection configured
-- ✅ Input validation and sanitization
-- ✅ SQL injection prevention (parameterized queries)
-- ✅ XSS protection
-- ⏳ JWT token authentication (coming soon)
-- ⏳ Rate limiting (coming soon)
+-  Password hashing using Werkzeug security
+-  CORS protection configured
+-  Input validation and sanitization
+-  SQL injection prevention (parameterized queries)
+-  XSS protection
+-  JWT token authentication (coming soon)
+-  Rate limiting (coming soon)
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 ### Backend Issues
 
@@ -317,7 +317,7 @@ npm install
 - Ensure backend is running on `http://localhost:5000`
 - Check `proxy` setting in `package.json`
 
-## 📝 Development Guidelines
+##  Development Guidelines
 
 ### Branching Strategy
 - `main` - Production-ready code
@@ -348,7 +348,7 @@ feat(auth): add password reset functionality
 Closes #123
 ```
 
-## 🤝 Contributing
+##  Contributing
 
 We welcome contributions! Here's how you can help:
 
@@ -382,42 +382,42 @@ We welcome contributions! Here's how you can help:
 - Write tests for new features
 - Update documentation
 
-## 📄 License
+##  License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 - SmartPath Development Team
 - All contributors and supporters
 - The open-source community
 - React and Flask communities
 
-## 📞 Contact & Support
+##  Contact & Support
 
 - **GitHub Issues:** [Report bugs or request features](https://github.com/Kosisookeke/smartpath/issues)
 - **Email:** support@smartpath.com
 - **Documentation:** [Full documentation](https://github.com/Kosisookeke/smartpath/wiki)
 
-## 🗺️ Roadmap
+##  Roadmap
 
 ### Q1 2025
-- ✅ MVP Launch (Authentication, Courses, Quizzes)
-- ⏳ Mobile responsiveness improvements
-- ⏳ Progress tracking dashboard
+-  MVP Launch (Authentication, Courses, Quizzes)
+-  Mobile responsiveness improvements
+-  Progress tracking dashboard
 
 ### Q2 2025
-- 📱 Progressive Web App (PWA)
-- 🔔 Email notifications
-- 🎮 Gamification features
+-  Progressive Web App (PWA)
+-  Email notifications
+-  Gamification features
 
 ### Q3 2025
-- 💬 Discussion forums
-- 🎥 Video lessons support
-- 🌐 Multi-language support
+-  Discussion forums
+-  Video lessons support
+-  Multi-language support
 
 ### Q4 2025
-- 🤖 AI-powered recommendations
-- 📊 Advanced analytics
-- 🔌 Third-party integrations
+-  AI-powered recommendations
+-  Advanced analytics
+-  Third-party integrations
 
 ---
 
@@ -425,5 +425,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
   <p>Made with ❤️ by the SmartPath Team</p>
   <p>Empowering learners across Africa and beyond</p>
   
-  ⭐ Star this repository if you find it helpful!
+   Star this repository if you find it helpful!
 </div>
