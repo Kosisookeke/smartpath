@@ -5,9 +5,10 @@ SmartPath — Guiding Students Toward Smarter Learning
 [![React 18+](https://img.shields.io/badge/react-18+-61dafb.svg)](https://reactjs.org/)
 [![Flask](https://img.shields.io/badge/flask-2.3.3-green.svg)](https://flask.palletsprojects.com/)
 
-Production URL
-Live Application: 🔗
-Figma Architecture :https://www.figma.com/board/qOjKZB2UtkLKjXADCSCOnh/SmartPath-Azure-Web-App-Architecture?node-id=0-1&t=cDyMcd33Wh9Qbq5f-1
+### Production URL
+Live Application: http://4.213.170.37/�
+Video Link: https://youtu.be/DsXfkelM4Dg
+Figma Architecture: https://www.figma.com/board/qOjKZB2UtkLKjXADCSCOnh/SmartPath-Azure-Web-App-Architecture?node-id=0-1&t=cDyMcd33Wh9Qbq5f-1
 
 SmartPath Context
 In many African learning environments, students struggle to access organized and affordable online educational resources. **SmartPath** bridges this gap by providing a simple, accessible, and interactive learning platform that supports students in exploring lessons, taking quizzes, and tracking progress.
