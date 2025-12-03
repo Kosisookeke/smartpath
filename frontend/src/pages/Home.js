@@ -13,7 +13,7 @@ const Home = () => {
     <div className="home">
       <section className="hero">
         <div className="hero-content">
-          <h1>Welcome to SmartPath </h1>
+          <h1>Welcome to SmartPath Education </h1>
           <p className="hero-subtitle">
             Empowering learners across Africa and beyond with accessible,
             high-quality education resources
@@ -43,7 +43,7 @@ const Home = () => {
       </section>
 
       <section className="features-section">
-        <h2>Why Choose SmartPath?</h2>
+        <h2>Why Choose SmartPath Education?</h2>
         <div className="features-grid">
           <div className="feature-item">
             <div className="feature-icon">📚</div>
