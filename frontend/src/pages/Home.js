@@ -13,10 +13,10 @@ const Home = () => {
     <div className="home">
       <section className="hero">
         <div className="hero-content">
-          <h1>Welcome to Smart Path  Education </h1>
+          <h1>Welcome to SmartPath </h1>
           <p className="hero-subtitle">
             Empowering learners across Africa and beyond with accessible,
-            high-quality educational resources
+            high-quality education resources
           </p>
           <div className="hero-buttons">
             {isAuthenticated() ? (
