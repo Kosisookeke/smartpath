@@ -6,8 +6,10 @@ SmartPath — Guiding Students Toward Smarter Learning
 [![Flask](https://img.shields.io/badge/flask-2.3.3-green.svg)](https://flask.palletsprojects.com/)
 
 ### Production URL
-Live Application: http://4.213.170.37/�
+Live Application: http://4.213.170.37
+
 Video Link: https://youtu.be/DsXfkelM4Dg
+
 Figma Architecture: https://www.figma.com/board/qOjKZB2UtkLKjXADCSCOnh/SmartPath-Azure-Web-App-Architecture?node-id=0-1&t=cDyMcd33Wh9Qbq5f-1
 
 SmartPath Context
